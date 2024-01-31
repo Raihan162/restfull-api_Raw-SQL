@@ -49,6 +49,73 @@ const getCourse = async () => {
     }
 };
 
+const addCourse = async (title, lecturers_id) => {
+    try {
+        const poolConnection = await connectionPool.getConnection();
+        await poolConnection.query(
+            `INSERT INTO ${TABLE_COURSES} (title, lecturers_id) VALUES ('${title}', ${lecturers_id});`
+        );
+        await poolConnection.connection.release();
+
+        return Promise.resolve([]);
+    } catch (error) {
+        throw error;
+    }
+};
+
+const deleteCourses = async (id) => {
+    try {
+        const poolConnection = await connectionPool.getConnection();
+        const query = await poolConnection.query(
+            `SELECT * FROM ${TABLE_COURSES} WHERE courses.id=${id};`
+        );
+        await poolConnection.connection.release();
+        const result = __constructQueryResult(query);
+
+        if (result.length === 0) {
+            throw new Error('ID doesn`t exist');
+        } else {
+            const poolConnection = await connectionPool.getConnection();
+            await poolConnection.query(
+                `DELETE FROM ${TABLE_COURSES} WHERE courses.id=${id};`
+            );
+            await poolConnection.connection.release();
+
+            return Promise.resolve([]);
+        }
+    } catch (error) {
+        throw error;
+    }
+};
+
+const updateCourses = async (request) => {
+    const { id } = request.query;
+    const { title, lecturers_id } = request.body;
+    try {
+        const poolConnection = await connectionPool.getConnection();
+        const query = await poolConnection.query(
+            `SELECT * FROM ${TABLE_COURSES} WHERE courses.id=${id};`
+        );
+        const result = __constructQueryResult(query);
+
+        if (result.length === 0) {
+            throw new Error('ID doesn`t exist');
+        }
+
+        await poolConnection.query(
+            `UPDATE ${TABLE_COURSES} SET title = '${title ? title : result[0].title}',lecturers_id='${lecturers_id ? lecturers_id : result[0].lecturers_id}' WHERE courses.id=${id};`
+        );
+        await poolConnection.connection.release();
+
+        return Promise.resolve([]);
+    } catch (error) {
+        throw error;
+    }
+};
+
 module.exports = {
-    getCourse
-}
+    getCourse,
+    addCourse,
+    deleteCourses,
+    updateCourses
+};
