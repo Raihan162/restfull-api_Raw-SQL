@@ -33,14 +33,52 @@ const __constructQueryResult = (query) => {
 
 // PUBLIC FUNCTION
 
-const addRegistration = async () => {
+const addRegistration = async (students_id, courses_id) => {
     try {
-        
+        const poolConnection = await connectionPool.getConnection();
+        await poolConnection.query(
+            `INSERT INTO ${TABLE_REGISTRATION} (students_id, courses_id) VALUES (${students_id}, ${courses_id});`
+        );
+        await poolConnection.connection.release();
+
+        return Promise.resolve([]);
     } catch (error) {
-        throw error
+        throw error;
     }
 };
 
-module.exports = {
-    addRegistration
+const getRegistration = async () => {
+    try {
+        const poolConnection = await connectionPool.getConnection();
+        const query = await poolConnection.query(
+            `SELECT
+                registrations.id AS RegistrationID,
+                students.id AS StudentID,
+                students.name AS StudentName,
+                students.major AS StudentMajor,
+                students.contact AS StudentContact,
+                courses.title AS CourseName,
+                lecturers.name as LecturerName,
+                lecturers.contact as LecturerContact
+            FROM
+                ${TABLE_REGISTRATION}
+                    INNER JOIN
+                students ON students.id = registrations.students_id
+                    INNER JOIN
+                courses ON courses.id = registrations.courses_id
+                    INNER JOIN
+                lecturers ON lecturers.id = courses.lecturers_id;`
+        );
+        await poolConnection.connection.release();
+        const result = __constructQueryResult(query);
+
+        return Promise.resolve(result);
+    } catch (error) {
+        throw error;
+    }
 }
+
+module.exports = {
+    addRegistration,
+    getRegistration
+};
