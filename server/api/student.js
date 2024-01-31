@@ -90,7 +90,7 @@ const updateStudent = async (request, reply) => {
                 error: error?.message
             });
     }
-}
+};
 
 Router.get('/list', listStudent);
 Router.post('/add', addStudent);

@@ -76,9 +76,61 @@ const getRegistration = async () => {
     } catch (error) {
         throw error;
     }
-}
+};
+
+const deleteRegistration = async (id) => {
+    try {
+        const poolConnection = await connectionPool.getConnection();
+        const query = await poolConnection.query(
+            `SELECT * FROM ${TABLE_REGISTRATION} WHERE registrations.id=${id};`
+        );
+        await poolConnection.connection.release();
+        const result = __constructQueryResult(query);
+
+        if (result.length === 0) {
+            throw new Error('ID doesn`t exist');
+        } else {
+            const poolConnection = await connectionPool.getConnection();
+            await poolConnection.query(
+                `DELETE FROM ${TABLE_REGISTRATION} WHERE registrations.id=${id};`
+            );
+            await poolConnection.connection.release();
+
+            return Promise.resolve([]);
+        }
+    } catch (error) {
+        throw error;
+    }
+};
+
+const updateRegistration = async (request) => {
+    const { id } = request.query;
+    const { students_id, courses_id } = request.body;
+    try {
+        const poolConnection = await connectionPool.getConnection();
+        const query = await poolConnection.query(
+            `SELECT * FROM ${TABLE_REGISTRATION} WHERE registrations.id=${id};`
+        );
+        const result = __constructQueryResult(query);
+
+        if (result.length === 0) {
+            throw new Error('ID doesn`t exist');
+        }
+
+        await poolConnection.query(
+            `UPDATE ${TABLE_REGISTRATION} SET students_id = '${students_id ? students_id : result[0].students_id}',courses_id='${courses_id ? courses_id : result[0].courses_id}' WHERE registrations.id=${id};`
+        );
+        await poolConnection.connection.release();
+
+        return Promise.resolve([]);
+    } catch (error) {
+        throw error;
+    }
+};
 
 module.exports = {
     addRegistration,
-    getRegistration
+    getRegistration,
+    deleteRegistration,
+    updateRegistration
 };

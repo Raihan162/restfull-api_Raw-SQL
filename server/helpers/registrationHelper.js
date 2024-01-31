@@ -21,7 +21,29 @@ const addRegistration = async (students_id, courses_id) => {
     }
 };
 
+const deleteRegistration = async (id) => {
+    try {
+        const response = await database.deleteRegistration(id);
+
+        return Promise.resolve(response);
+    } catch (error) {
+        throw error;
+    }
+};
+
+const updateRegistration = async (request) => {
+    try {
+        const response = await database.updateRegistration(request);
+
+        return Promise.resolve(response);
+    } catch (error) {
+        throw error;
+    }
+};
+
 module.exports = {
     getRegistration,
-    addRegistration
+    addRegistration,
+    deleteRegistration,
+    updateRegistration
 };
